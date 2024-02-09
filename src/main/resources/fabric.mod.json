@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "eg-invisible-frames",
+  "version": "${version}",
+  "name": "Invisible Frames",
+  "description": "Lets you turn Item Frames invisible by punching them with a glass pane!",
+  "authors": ["Enchanted_Games"],
+  "contact": {
+    "homepage": "https://fabricmc.net/",
+    "sources": "https://github.com/FabricMC/fabric-example-mod"
+  },
+  "license": "CC0-1.0",
+  "icon": "assets/eg-invisible-frames/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["games.enchanted.invisibleItemFrames.InvisibleFrames"]
+  },
+  "mixins": ["eg-invisible-frames.mixins.json"],
+  "depends": {
+    "fabricloader": ">=0.15.0",
+    "minecraft": "*",
+    "java": ">=17",
+    "fabric-api": "*"
+  }
+}
