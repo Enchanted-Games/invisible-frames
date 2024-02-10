@@ -34,7 +34,7 @@ public class ItemFrameEntityMixin extends AbstractDecorationEntity {
 
 	private static final TrackedData<ItemStack> GLASS_PANE_ITEM;
 
-	@Inject( at = @At("HEAD"), method = "Lnet/minecraft/entity/decoration/ItemFrameEntity;initDataTracker()V" )
+	@Inject( at = @At("HEAD"), method = "initDataTracker()V" )
 	public void initDataTracker(CallbackInfo ci) {
     this.getDataTracker().startTracking(GLASS_PANE_ITEM, ItemStack.EMPTY);
 	}
@@ -51,7 +51,7 @@ public class ItemFrameEntityMixin extends AbstractDecorationEntity {
 			target = "Lnet/minecraft/entity/decoration/ItemFrameEntity;getHeldItemStack()Lnet/minecraft/item/ItemStack;",
 			shift = At.Shift.AFTER
 		),
-		method = "Lnet/minecraft/entity/decoration/ItemFrameEntity;damage(Lnet/minecraft/entity/damage/DamageSource;F)Z",
+		method = "damage(Lnet/minecraft/entity/damage/DamageSource;F)Z",
 		cancellable = true
 	)
 	public void damage(DamageSource source, float amount, CallbackInfoReturnable<Boolean> ci) {
@@ -81,7 +81,7 @@ public class ItemFrameEntityMixin extends AbstractDecorationEntity {
 	}
 
 	// drops the glass_pane_item from NBT when the ItemFrame is killed
-	@Inject(at = @At("HEAD"), method = "Lnet/minecraft/entity/decoration/ItemFrameEntity;kill()V")
+	@Inject(at = @At("HEAD"), method = "kill()V")
 	private void kill(CallbackInfo ci) {
 		if( this.isInvisible() && !getGlassPaneItemStack().isEmpty() ) {
 			this.dropStack( getGlassPaneItemStack() );
@@ -90,7 +90,7 @@ public class ItemFrameEntityMixin extends AbstractDecorationEntity {
 	}
 	
 	// save glass_pane_item to ItemFrame NBT
-	@Inject(at = @At("HEAD"), method = "Lnet/minecraft/entity/decoration/ItemFrameEntity;writeCustomDataToNbt(Lnet/minecraft/nbt/NbtCompound;)V")
+	@Inject(at = @At("HEAD"), method = "writeCustomDataToNbt(Lnet/minecraft/nbt/NbtCompound;)V")
 	private void writeCustomDataToNbt(NbtCompound nbt, CallbackInfo ci) {
 		if( !getGlassPaneItemStack().isEmpty() ) {
 			nbt.put("glass_pane_item", getGlassPaneItemStack().writeNbt(new NbtCompound()));
@@ -98,7 +98,7 @@ public class ItemFrameEntityMixin extends AbstractDecorationEntity {
 	}
 	
 	// read glass_pane_item from ItemFrame NBT
-	@Inject(at = @At("HEAD"), method = "Lnet/minecraft/entity/decoration/ItemFrameEntity;readCustomDataFromNbt(Lnet/minecraft/nbt/NbtCompound;)V")
+	@Inject(at = @At("HEAD"), method = "readCustomDataFromNbt(Lnet/minecraft/nbt/NbtCompound;)V")
 	private void readCustomDataFromNbt(NbtCompound nbt, CallbackInfo ci) {
 		NbtCompound nbtCompound = nbt.getCompound("glass_pane_item");
 		if (nbtCompound != null && !nbtCompound.isEmpty()) {
