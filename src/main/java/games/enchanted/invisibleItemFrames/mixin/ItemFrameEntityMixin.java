@@ -16,6 +16,8 @@ import net.minecraft.particle.BlockStateParticleEffect;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 import games.enchanted.invisibleItemFrames.InvisibleFrames;
@@ -113,7 +115,7 @@ public class ItemFrameEntityMixin extends AbstractDecorationEntity {
 		super.tick();
 		// summon a particle if ItemFrame is invisible and has a glass_pane_item in its NBT and is empty
 		if( !getGlassPaneItemStack().isEmpty() && this.isInvisible() && getHeldItemStack().isEmpty() &&
-			random.nextInt(12) == 0
+			random.nextInt(30) == 0
 		) {
 			BlockPos pos = this.getBlockPos();
 			double x = (double) pos.getX() + random.nextDouble();
