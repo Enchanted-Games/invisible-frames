@@ -15,10 +15,12 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 
 import games.enchanted.invisibleItemFrames.InvisibleFrames;
 
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -55,15 +57,16 @@ public class ItemFrameEntityMixin extends AbstractDecorationEntity {
 		cancellable = true
 	)
 	public void damage(DamageSource source, float amount, CallbackInfoReturnable<Boolean> ci) {
+		Entity attacker = source.getAttacker();
 
-    if ( source.getAttacker() instanceof PlayerEntity && !this.isInvisible() && !this.getWorld().isClient ) {
-			final PlayerEntity player = (PlayerEntity) source.getAttacker();
+		// if player damages an item frame that isn't invisible
+    if ( attacker instanceof PlayerEntity && !this.isInvisible() && !this.getWorld().isClient ) {
+			final PlayerEntity player = (PlayerEntity) attacker;
 			final ItemStack playMainHandStack = player.getMainHandStack();
 
-			if( 
-				playMainHandStack.isOf( Items.GLASS_PANE ) || // fallback in case there are no convention tags loaded
-				playMainHandStack.isIn( InvisibleFrames.FABRIC_CONVENTION_GLASS_PANES_TAG ) ||
-				playMainHandStack.isIn( InvisibleFrames.FABRIC_CONVENTION_GLASS_PANE_TAG )
+			if(
+				playMainHandStack.isOf( Items.GLASS_PANE ) || // fallback in case MAKES_ITEM_FRAMES_INVISIBLE_TAG fails to load
+				playMainHandStack.isIn( InvisibleFrames.MAKES_ITEM_FRAMES_INVISIBLE_TAG )
 			) {
 				ItemStack paneTakenFromPlayer = playMainHandStack.copy();
 				paneTakenFromPlayer.setCount(1);
@@ -78,15 +81,18 @@ public class ItemFrameEntityMixin extends AbstractDecorationEntity {
 				ci.setReturnValue( true );
 			}
 		}
+		// if player damages an item frame that is invisible, has a glass pane item and has no held item
+		else if ( attacker instanceof PlayerEntity && this.isInvisible() && !this.getGlassPaneItemStack().isEmpty() && this.getHeldItemStack().isEmpty() ) {
+			this.dropGlassPaneStack( attacker );
+			this.setInvisible( false );
+			ci.setReturnValue( true );
+		}
 	}
 
-	// drops the glass_pane_item from NBT when the ItemFrame is killed
-	@Inject(at = @At("HEAD"), method = "kill()V")
-	private void kill(CallbackInfo ci) {
-		if( this.isInvisible() && !getGlassPaneItemStack().isEmpty() ) {
-			this.dropStack( getGlassPaneItemStack() );
-			setGlassPaneItemStack(ItemStack.EMPTY);
-		}
+	// drop glass pane when item frame breaks
+	@Inject(at = @At("HEAD"), method = "onBreak(Lnet/minecraft/entity/Entity;)V")
+	private void onBreak(@Nullable Entity entity, CallbackInfo ci) {
+		this.dropGlassPaneStack(entity);
 	}
 	
 	// save glass_pane_item to ItemFrame NBT
@@ -112,7 +118,7 @@ public class ItemFrameEntityMixin extends AbstractDecorationEntity {
 		super.tick();
 		// summon a particle if ItemFrame is invisible and has a glass_pane_item in its NBT and is empty
 		if( !getGlassPaneItemStack().isEmpty() && this.isInvisible() && getHeldItemStack().isEmpty() &&
-			random.nextInt(30) == 0
+			random.nextInt(40) == 0
 		) {
 			BlockPos pos = this.getBlockPos();
 			double x = (double) pos.getX() + random.nextDouble();
@@ -120,7 +126,25 @@ public class ItemFrameEntityMixin extends AbstractDecorationEntity {
 			double z = (double) pos.getZ() + random.nextDouble();
 			this.getWorld().addParticle(ParticleTypes.END_ROD, x, y, z, 0.0, 0.0, 0.0);
 		}
- }
+	}
+
+	private void dropGlassPaneStack(Entity entity) {
+		if ( this.fixed || !this.getWorld().getGameRules().getBoolean(GameRules.DO_ENTITY_DROPS) ) {
+			return;
+		}
+		
+		ItemStack paneStack = this.getGlassPaneItemStack();
+
+		if ( entity instanceof PlayerEntity ) {
+			PlayerEntity player = (PlayerEntity) entity;
+			if ( player.getAbilities().creativeMode ) {
+				return;
+			}
+		}
+		
+		this.dropStack( paneStack );
+		setGlassPaneItemStack( ItemStack.EMPTY );
+	}
 
 	private ItemStack getGlassPaneItemStack() {
 		return this.getDataTracker().get(GLASS_PANE_ITEM);
@@ -130,23 +154,25 @@ public class ItemFrameEntityMixin extends AbstractDecorationEntity {
 	}
 	
 	@Shadow
+	public boolean fixed;
+	@Shadow
 	public void onPlace() {
-		throw new AssertionError("not shadowed");
+		throw new AssertionError("onPlace not shadowed");
 	};
 	@Shadow
 	public void onBreak(Entity arg0) {
-		throw new AssertionError("not shadowed");
+		throw new AssertionError("onBreak not shadowed");
 	};
 	@Shadow
 	public int getHeightPixels() {
-		throw new AssertionError("not shadowed");
+		throw new AssertionError("getHeightPixels not shadowed");
 	};
 	@Shadow
 	public int getWidthPixels() {
-		throw new AssertionError("not shadowed");
+		throw new AssertionError("getWidthPixels not shadowed");
 	};
 	@Shadow
 	public ItemStack getHeldItemStack() {
-		throw new AssertionError("not shadowed");
+		throw new AssertionError("getHeldItemStack not shadowed");
 	};
 }
