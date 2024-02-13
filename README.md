@@ -1,8 +1,19 @@
 # Invisible Frames
+A survival-friendly way to make Invisible Item Frames. To make an Item Frame invisible, simply punch it with any Glass Pane. Punch the item frame again drop the Glass Pane on the ground and make it visible again.
 
-- turn item frames invisible by punching them with glass pane
-- glass pane is given back when frame is broken
-- invisible frames emit particles when empty
+This mod is fully server-side which means it only needs to be installed on the server and any client (even vanilla) can make Invisible Item Frames!
+
+## Features
+- Invisible Item Frames made with the mod will emit a glowing white particle when they are not holding an item.
+- Items that can make a frame invisible can be changed via a datapack.
+- Items that were used to make the frame invisible are dropped when the Item Frame is broken.
+
+## Customisation
+Items that can make Item Frames invisible are controlled by an item tag, this is basically just list of items.
+
+To add items to this tag, you can make a datapack and add the file `data/eg-invisible-frames/tags/items/makes_item_frames_invisible.json`. See the [default one here](https://github.com/Enchanted-Games/invisible-frames/tree/main/src/main/resources/data/eg-invisible-frames/tags/items) or [read more about tags](https://minecraft.wiki/w/Tag#JSON_format).
+
+By default, this contains `minecraft:glass_pane` and `#c:glass_panes` (this is a [Fabric Conventional Tag](https://fabricmc.net/wiki/community:common_tags) that includes vanilla and most modded glass panes).
 
 ## License
 
