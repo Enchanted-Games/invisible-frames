@@ -1,5 +1,5 @@
 # Invisible Frames
-A survival-friendly way to make Invisible Item Frames. To make an Item Frame invisible, simply punch it with any Glass Pane. Punch the item frame again drop the Glass Pane on the ground and make it visible again.
+A survival-friendly way to make Invisible Item Frames. To make an Item Frame invisible, simply punch it with any Glass Pane. Punch the item frame again to pop out the glass pane and make it visible again.
 
 This mod is fully server-side which means it only needs to be installed on the server and any client (even vanilla) can connect and make Item Frames invisible!
 
