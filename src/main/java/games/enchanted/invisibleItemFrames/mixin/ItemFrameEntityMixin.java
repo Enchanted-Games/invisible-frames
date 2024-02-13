@@ -38,8 +38,10 @@ public class ItemFrameEntityMixin extends AbstractDecorationEntity {
 		super(entityType, world);
 	}
 
+	@Unique
 	private static final TrackedData<ItemStack> GLASS_PANE_ITEM;
-	ArrayList<ServerPlayerEntity> playersTrackingThisFrame = new ArrayList<>();
+	@Unique
+	private ArrayList<ServerPlayerEntity> playersTrackingThisFrame = new ArrayList<>();
 
 	@Inject( at = @At("HEAD"), method = "initDataTracker()V" )
 	public void initDataTracker( CallbackInfo ci ) {
@@ -106,7 +108,7 @@ public class ItemFrameEntityMixin extends AbstractDecorationEntity {
 	// read glass_pane_item from ItemFrame NBT
 	@Inject(at = @At("HEAD"), method = "readCustomDataFromNbt(Lnet/minecraft/nbt/NbtCompound;)V")
 	private void readCustomDataFromNbt( NbtCompound nbt, CallbackInfo ci ) {
-		NbtCompound nbtCompound = nbt.getCompound("glass_pane_item");
+		NbtCompound nbtCompound = nbt.getCompound( "glass_pane_item" );
 		if ( nbtCompound != null && !nbtCompound.isEmpty() ) {
 				ItemStack itemStack = ItemStack.fromNbt( nbtCompound );
 				this.setGlassPaneItemStack( itemStack );
@@ -130,17 +132,6 @@ public class ItemFrameEntityMixin extends AbstractDecorationEntity {
 	}
 	
 	@Unique
-	public void onStartedTrackingBy( ServerPlayerEntity player ) {
-		playersTrackingThisFrame.add( player );
-		InvisibleFrames.log.info( playersTrackingThisFrame.toString() );
-	}
-	
-	@Unique
-	public void onStoppedTrackingBy( ServerPlayerEntity player ){
-		playersTrackingThisFrame.remove( player );
-		InvisibleFrames.log.info( playersTrackingThisFrame.toString() );
-	}
-
 	private void dropGlassPaneStack( Entity entity ) {
 		if ( this.fixed || !this.getWorld().getGameRules().getBoolean( GameRules.DO_ENTITY_DROPS ) ) {
 			return;
@@ -159,13 +150,24 @@ public class ItemFrameEntityMixin extends AbstractDecorationEntity {
 		setGlassPaneItemStack( ItemStack.EMPTY );
 	}
 
+	@Unique
 	private ItemStack getGlassPaneItemStack() {
 		return this.getDataTracker().get( GLASS_PANE_ITEM );
 	}
+
+	@Unique
 	private void setGlassPaneItemStack( ItemStack stack ) {
 		this.getDataTracker().set( GLASS_PANE_ITEM, stack );
 	}
 	
+	public void onStartedTrackingBy( ServerPlayerEntity player ) {
+		playersTrackingThisFrame.add( player );
+	}
+	
+	public void onStoppedTrackingBy( ServerPlayerEntity player ){
+		playersTrackingThisFrame.remove( player );
+	}
+
 	@Shadow
 	public boolean fixed;
 	@Shadow
@@ -188,4 +190,5 @@ public class ItemFrameEntityMixin extends AbstractDecorationEntity {
 	public ItemStack getHeldItemStack() {
 		throw new AssertionError( "getHeldItemStack not shadowed" );
 	};
+	
 }

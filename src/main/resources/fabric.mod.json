@@ -13,7 +13,8 @@
   "icon": "assets/eg-invisible-frames/icon.png",
   "environment": "*",
   "entrypoints": {
-    "main": ["games.enchanted.invisibleItemFrames.InvisibleFrames"]
+    "main": ["games.enchanted.invisibleItemFrames.InvisibleFrames"],
+    "client": ["games.enchanted.invisibleItemFrames.InvisibleFramesClient"]
   },
   "mixins": ["eg-invisible-frames.mixins.json"],
   "depends": {
