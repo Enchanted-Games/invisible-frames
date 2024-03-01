@@ -63,7 +63,7 @@ public class ItemFrameEntityMixin extends AbstractDecorationEntity {
 		Entity attacker = source.getAttacker();
 
 		// if player damages an item frame that isn't invisible
-    if ( attacker instanceof PlayerEntity && !this.isInvisible() && !this.getWorld().isClient ) {
+    if ( attacker instanceof PlayerEntity && !this.isInvisible() && !this.method_48926().isClient ) {
 			final PlayerEntity player = (PlayerEntity) attacker;
 			final ItemStack playMainHandStack = player.getMainHandStack();
 
@@ -131,7 +131,7 @@ public class ItemFrameEntityMixin extends AbstractDecorationEntity {
 	
 	@Unique
 	private void dropGlassPaneStack( Entity entity ) {
-		if ( this.fixed || !this.getWorld().getGameRules().getBoolean( GameRules.DO_ENTITY_DROPS ) ) {
+		if ( this.fixed || !this.method_48926().getGameRules().getBoolean( GameRules.DO_ENTITY_DROPS ) ) {
 			return;
 		}
 		
