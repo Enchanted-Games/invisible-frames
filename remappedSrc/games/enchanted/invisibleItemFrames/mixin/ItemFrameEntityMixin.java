@@ -16,6 +16,8 @@ import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
+import net.minecraft.util.math.Direction;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 
@@ -24,6 +26,8 @@ import games.enchanted.invisibleItemFrames.InvisibleFrames;
 import java.util.ArrayList;
 
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -34,6 +38,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ItemFrameEntity.class)
 public class ItemFrameEntityMixin extends AbstractDecorationEntity {
+	@Shadow @Final private static Logger ITEM_FRAME_LOGGER;
+
 	protected ItemFrameEntityMixin(EntityType<? extends AbstractDecorationEntity> entityType, World world) {
 		super(entityType, world);
 	}
@@ -116,14 +122,21 @@ public class ItemFrameEntityMixin extends AbstractDecorationEntity {
 	@Override
 	public void tick() {
 		super.tick();
-		// summon a particle if ItemFrame is invisible and has a glass_pane_item in its NBT and is empty
-		if( !getGlassPaneItemStack().isEmpty() && this.isInvisible() && getHeldItemStack().isEmpty() && random.nextInt(40) == 0 ) {
-			BlockPos pos = this.getBlockPos();
-			double x = (double) pos.getX() + random.nextDouble();
-			double y = (double) pos.getY() + random.nextDouble();
-			double z = (double) pos.getZ() + random.nextDouble();
+		// summon a particle if ItemFrame is invisible, has a glass_pane_item in its NBT, is empty, and is less than 15 blocks away from player
+		if( !getGlassPaneItemStack().isEmpty() && this.isInvisible() && getHeldItemStack().isEmpty() && random.nextInt(30) == 0) {
+			Box boundingBox = this.getBoundingBox();
+
+			double x = boundingBox.minX + (boundingBox.getLengthX() * random.nextDouble());
+			double y = boundingBox.minY + (boundingBox.getLengthY() * random.nextDouble());
+			double z = boundingBox.minZ + (boundingBox.getLengthZ() * random.nextDouble());
+			if(this.facing == Direction.UP) {
+				y += 0.125;
+			}
 
 			for ( ServerPlayerEntity player : playersTrackingThisFrame ) {
+				if(player.distanceTo(this) > 15 && player.canSee(this)) {
+					return;
+				}
 				player.networkHandler.sendPacket( new ParticleS2CPacket( ParticleTypes.END_ROD, true, x, y, z, 0.0f, 0.0f, 0.0f, 0.0f, 1 ) );
 			}
 		}

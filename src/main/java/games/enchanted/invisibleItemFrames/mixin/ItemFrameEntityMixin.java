@@ -11,6 +11,7 @@ import net.minecraft.entity.decoration.ItemFrameEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.network.packet.s2c.play.ParticleS2CPacket;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -18,6 +19,7 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 
@@ -38,26 +40,22 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ItemFrameEntity.class)
 public class ItemFrameEntityMixin extends AbstractDecorationEntity {
-	@Shadow @Final private static Logger ITEM_FRAME_LOGGER;
-
-	protected ItemFrameEntityMixin(EntityType<? extends AbstractDecorationEntity> entityType, World world) {
+	public ItemFrameEntityMixin(EntityType<? extends AbstractDecorationEntity> entityType, World world) {
 		super(entityType, world);
 	}
 
+	@Shadow
+	private boolean fixed;
 	@Unique
 	private static final TrackedData<ItemStack> GLASS_PANE_ITEM;
 	@Unique
 	private ArrayList<ServerPlayerEntity> playersTrackingThisFrame = new ArrayList<>();
 
-	@Inject( at = @At("HEAD"), method = "initDataTracker(Lnet/minecraft/entity/data/DataTracker$Builder;)V" )
+	@Inject( at = @At("HEAD"), method = "initDataTracker(Lnet/minecraft/entity/data/DataTracker$Builder;)V")
 	public void initDataTracker( DataTracker.Builder builder, CallbackInfo ci ) {
-    builder.add( GLASS_PANE_ITEM, ItemStack.EMPTY );
+		builder.add( GLASS_PANE_ITEM, ItemStack.EMPTY );
 	}
 
-	static {
-		GLASS_PANE_ITEM = DataTracker.registerData( ItemFrameEntity.class, TrackedDataHandlerRegistry.ITEM_STACK );
-	}
-	
 	// check if a player attacks ItemFrame while holding any item from #eg-invisible-frames:makes_item_frames_invisible
 	//   if so, set ItemFrame to invisible and save the glass pane
 	@Inject(
@@ -69,13 +67,10 @@ public class ItemFrameEntityMixin extends AbstractDecorationEntity {
 		Entity attacker = source.getAttacker();
 
 		// if player damages an item frame that isn't invisible
-    if ( attacker instanceof PlayerEntity && !this.isInvisible() && !this.getWorld().isClient ) {
-			final PlayerEntity player = (PlayerEntity) attacker;
+		if ( attacker instanceof PlayerEntity player && !this.isInvisible() && !this.getWorld().isClient ) {
 			final ItemStack playMainHandStack = player.getMainHandStack();
 
-			if(
-				playMainHandStack.isIn( InvisibleFrames.MAKES_ITEM_FRAMES_INVISIBLE_TAG )
-			) {
+			if( playMainHandStack.isIn( InvisibleFrames.MAKES_ITEM_FRAMES_INVISIBLE_TAG ) ) {
 				ItemStack paneTakenFromPlayer = playMainHandStack.copy();
 				paneTakenFromPlayer.setCount(1);
 				setGlassPaneItemStack( paneTakenFromPlayer );
@@ -114,8 +109,13 @@ public class ItemFrameEntityMixin extends AbstractDecorationEntity {
 	// read glass_pane_item from ItemFrame NBT
 	@Inject(at = @At("HEAD"), method = "readCustomDataFromNbt(Lnet/minecraft/nbt/NbtCompound;)V")
 	private void readCustomDataFromNbt( NbtCompound nbt, CallbackInfo ci ) {
-		NbtCompound nbtCompound = nbt.getCompound( "glass_pane_item" );
-		ItemStack itemStack = ItemStack.fromNbt( this.getRegistryManager(), nbtCompound ).orElse(ItemStack.EMPTY);
+		ItemStack itemStack;
+		if ( nbt.contains( "glass_pane_item", NbtElement.COMPOUND_TYPE ) ) {
+			NbtCompound nbtCompound = nbt.getCompound( "glass_pane_item" );
+			itemStack = ItemStack.fromNbt( this.getRegistryManager(), nbtCompound ).orElse( ItemStack.EMPTY );
+		} else {
+			itemStack = ItemStack.EMPTY;
+		}
 		this.setGlassPaneItemStack( itemStack );
 	}
 
@@ -161,6 +161,10 @@ public class ItemFrameEntityMixin extends AbstractDecorationEntity {
 		setGlassPaneItemStack( ItemStack.EMPTY );
 	}
 
+	static {
+		GLASS_PANE_ITEM = DataTracker.registerData( ItemFrameEntityMixin.class, TrackedDataHandlerRegistry.ITEM_STACK );
+	}
+
 	@Unique
 	private ItemStack getGlassPaneItemStack() {
 		return this.getDataTracker().get( GLASS_PANE_ITEM );
@@ -179,8 +183,14 @@ public class ItemFrameEntityMixin extends AbstractDecorationEntity {
 		playersTrackingThisFrame.remove( player );
 	}
 
-	@Shadow
-	public boolean fixed;
+	@Unique
+	public Box calculateBoundingBox(BlockPos pos, Direction side) {
+		return null;
+	}
+	@Unique
+	public void initDataTracker(DataTracker.Builder builder) {
+	}
+
 	@Shadow
 	public void onPlace() {
 		throw new AssertionError( "onPlace not shadowed" );
@@ -190,16 +200,7 @@ public class ItemFrameEntityMixin extends AbstractDecorationEntity {
 		throw new AssertionError( "onBreak not shadowed" );
 	};
 	@Shadow
-	public int getHeightPixels() {
-		throw new AssertionError( "getHeightPixels not shadowed" );
-	};
-	@Shadow
-	public int getWidthPixels() {
-		throw new AssertionError( "getWidthPixels not shadowed" );
-	};
-	@Shadow
 	public ItemStack getHeldItemStack() {
 		throw new AssertionError( "getHeldItemStack not shadowed" );
 	};
-	
 }

@@ -13,7 +13,7 @@ public class InvisibleFrames implements ModInitializer {
   public static final String MOD_ID = "eg-invisible-frames";
   public static final Logger log = LoggerFactory.getLogger( MOD_ID );
 
-  public static final TagKey<Item> MAKES_ITEM_FRAMES_INVISIBLE_TAG = TagKey.of( RegistryKeys.ITEM, new Identifier( MOD_ID, "makes_item_frames_invisible" ) );
+  public static final TagKey<Item> MAKES_ITEM_FRAMES_INVISIBLE_TAG = TagKey.of( RegistryKeys.ITEM, Identifier.of( MOD_ID, "makes_item_frames_invisible" ) );
 
   @Override
   public void onInitialize() {
