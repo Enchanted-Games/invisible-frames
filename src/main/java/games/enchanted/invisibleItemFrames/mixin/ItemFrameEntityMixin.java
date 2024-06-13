@@ -47,13 +47,19 @@ public class ItemFrameEntityMixin extends AbstractDecorationEntity {
 	@Shadow
 	private boolean fixed;
 	@Unique
-	private static final TrackedData<ItemStack> GLASS_PANE_ITEM;
+	private ItemStack GLASS_PANE_ITEM = ItemStack.EMPTY;
 	@Unique
 	private ArrayList<ServerPlayerEntity> playersTrackingThisFrame = new ArrayList<>();
 
-	@Inject( at = @At("HEAD"), method = "initDataTracker(Lnet/minecraft/entity/data/DataTracker$Builder;)V")
-	public void initDataTracker( DataTracker.Builder builder, CallbackInfo ci ) {
-		builder.add( GLASS_PANE_ITEM, ItemStack.EMPTY );
+	@Unique
+	@Override
+	public void initDataTracker(DataTracker.Builder builder) {
+	}
+
+	@Unique
+	@Override
+	public Box calculateBoundingBox(BlockPos pos, Direction side) {
+		return null;
 	}
 
 	// check if a player attacks ItemFrame while holding any item from #eg-invisible-frames:makes_item_frames_invisible
@@ -161,18 +167,14 @@ public class ItemFrameEntityMixin extends AbstractDecorationEntity {
 		setGlassPaneItemStack( ItemStack.EMPTY );
 	}
 
-	static {
-		GLASS_PANE_ITEM = DataTracker.registerData( ItemFrameEntityMixin.class, TrackedDataHandlerRegistry.ITEM_STACK );
-	}
-
 	@Unique
 	private ItemStack getGlassPaneItemStack() {
-		return this.getDataTracker().get( GLASS_PANE_ITEM );
+		return GLASS_PANE_ITEM;
 	}
 
 	@Unique
 	private void setGlassPaneItemStack( ItemStack stack ) {
-		this.getDataTracker().set( GLASS_PANE_ITEM, stack );
+		GLASS_PANE_ITEM = stack;
 	}
 	
 	public void onStartedTrackingBy( ServerPlayerEntity player ) {
@@ -181,14 +183,6 @@ public class ItemFrameEntityMixin extends AbstractDecorationEntity {
 	
 	public void onStoppedTrackingBy( ServerPlayerEntity player ){
 		playersTrackingThisFrame.remove( player );
-	}
-
-	@Unique
-	public Box calculateBoundingBox(BlockPos pos, Direction side) {
-		return null;
-	}
-	@Unique
-	public void initDataTracker(DataTracker.Builder builder) {
 	}
 
 	@Shadow
