@@ -19,7 +19,7 @@
   "mixins": ["eg-invisible-frames.mixins.json"],
   "depends": {
     "fabricloader": ">=0.14.0",
-    "minecraft": ["1.21-rc.1", "1.21"],
+    "minecraft": ">=1.21.4",
     "java": ">=17",
     "fabric-api": "*"
   }
