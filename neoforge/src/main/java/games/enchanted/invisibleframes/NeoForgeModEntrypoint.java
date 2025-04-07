@@ -1,6 +1,5 @@
 package games.enchanted.invisibleframes;
 
-
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 
