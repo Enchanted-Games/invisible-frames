@@ -1,6 +1,7 @@
 package games.enchanted.invisibleframes.platform;
 
-import games.enchanted.invisibleframes.Constants;
+import games.enchanted.invisibleframes.InvisibleFramesConstants;
+import games.enchanted.invisibleframes.InvisibleFramesLogging;
 import games.enchanted.invisibleframes.platform.services.IPlatformHelper;
 
 import java.util.ServiceLoader;
@@ -24,7 +25,7 @@ public class Services {
         final T loadedService = ServiceLoader.load(clazz)
                 .findFirst()
                 .orElseThrow(() -> new NullPointerException("Failed to load service for " + clazz.getName()));
-        Constants.LOG.debug("Loaded {} for service {}", loadedService, clazz);
+        InvisibleFramesLogging.debug("Loaded {} for service {}", loadedService, clazz);
         return loadedService;
     }
 }

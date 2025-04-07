@@ -20,7 +20,7 @@
     "environment": "*",
     "entrypoints": {
         "main": [
-            "games.enchanted.invisibleframes.ExampleMod"
+            "games.enchanted.invisibleframes.FabricModEntrypoint"
         ]
     },
     "mixins": [
