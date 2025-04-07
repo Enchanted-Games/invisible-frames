@@ -6,7 +6,7 @@
   "description": "Lets you turn Item Frames invisible by punching them with a glass pane!\n Fully server-side and can be customised with a datapack, read more on the mod website.",
   "authors": ["Enchanted_Games"],
   "contact": {
-    "homepage": "https://fabricmc.net/",
+    "homepage": "https://enchanted.games/projects/java-mods/invisible-frames",
     "sources": "https://github.com/FabricMC/fabric-example-mod"
   },
   "license": "CC BY-NC 4.0",
@@ -19,7 +19,7 @@
   "mixins": ["eg-invisible-frames.mixins.json"],
   "depends": {
     "fabricloader": ">=0.14.0",
-    "minecraft": ">=1.19.3",
+    "minecraft": ">=1.21.4",
     "java": ">=17",
     "fabric-api": "*"
   }
