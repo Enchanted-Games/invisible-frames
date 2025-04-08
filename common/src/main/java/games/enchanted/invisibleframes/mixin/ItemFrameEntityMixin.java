@@ -4,6 +4,11 @@ package games.enchanted.invisibleframes.mixin;
 import java.util.ArrayList;
 import java.util.Optional;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.sugar.Cancellable;
+import com.llamalad7.mixinextras.sugar.Local;
 import games.enchanted.invisibleframes.InvisibleFramesConstants;
 import games.enchanted.invisibleframes.duck.InvisibleFramesAccess;
 import net.minecraft.nbt.CompoundTag;
@@ -61,16 +66,15 @@ public abstract class ItemFrameEntityMixin extends HangingEntity implements Invi
 
 	// check if a player attacks ItemFrame while holding any item from #eg-invisible-frames:makes_item_frames_invisible
 	//   if so, set ItemFrame to invisible and save the glass pane
-	@Inject(
+	@ModifyExpressionValue(
 		at = @At(
 			value = "INVOKE",
-			target = "Lnet/minecraft/world/entity/decoration/ItemFrame;isInvulnerableToBase(Lnet/minecraft/world/damagesource/DamageSource;)Z",
-			shift = At.Shift.AFTER
+			target = "Lnet/minecraft/world/entity/decoration/ItemFrame;isInvulnerableToBase(Lnet/minecraft/world/damagesource/DamageSource;)Z"
 		),
-		method = "hurtServer",
-		cancellable = true
+		method = "hurtServer"
 	)
-	public void damage(ServerLevel level, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
+	public boolean damage(boolean original, @Local(argsOnly = true) DamageSource source, @Cancellable CallbackInfoReturnable<Boolean> cir) {
+		if(original) return original;
 		Entity attacker = source.getEntity();
 
 		// if player damages an item frame that isn't invisible
@@ -97,6 +101,7 @@ public abstract class ItemFrameEntityMixin extends HangingEntity implements Invi
 			this.setInvisible(false);
 			cir.setReturnValue(true);
 		}
+		return original;
 	}
 
 	// drop glass pane when item frame breaks
