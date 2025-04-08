@@ -4,7 +4,11 @@
   "package": "games.enchanted.invisibleframes.mixin",
   "refmap": "${mod_id}.refmap.json",
   "compatibilityLevel": "JAVA_21",
-  "mixins": [],
+  "mixins": [
+    "BlockAttachedEntityMixin",
+    "ItemFrameEntityMixin",
+    "access.HangingEntityAccess"
+  ],
   "client": [
   ],
   "server": [],
