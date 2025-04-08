@@ -20,6 +20,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
+import org.spongepowered.asm.mixin.Debug;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -28,6 +29,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+@Debug(export = true)
 @Mixin(ItemFrame.class)
 public abstract class ItemFrameEntityMixin extends HangingEntity implements InvisibleFramesAccess {
 	public ItemFrameEntityMixin(EntityType<? extends HangingEntity> entityType, Level world) {
@@ -38,25 +40,37 @@ public abstract class ItemFrameEntityMixin extends HangingEntity implements Invi
 	private boolean fixed;
 	@Shadow
 	public void playPlacementSound() {
-		throw new AssertionError( "onPlace not shadowed" );
+		throw new AssertionError("onPlace not shadowed");
 	};
 	@Shadow
 	public abstract ItemStack getItem();
 
 	@Unique
-	private ItemStack invisibleFrames$GLASS_PANE_ITEM = ItemStack.EMPTY;
+	private ItemStack invisibleFrames$MADE_INVISIBLE_ITEM = ItemStack.EMPTY;
+	@Unique
+	private final ArrayList<ServerPlayer> invisibleFrames$playersTrackingThisFrame = new ArrayList<>();
 
 	@Unique
-	private ArrayList<ServerPlayer> invisibleFrames$playersTrackingThisFrame = new ArrayList<>();
+	private ItemStack invisibleFrames$getInvisibleItemStack() {
+		return invisibleFrames$MADE_INVISIBLE_ITEM;
+	}
+	@Unique
+	private void invisibleFrames$setGlassPaneItemStack(ItemStack stack) {
+		invisibleFrames$MADE_INVISIBLE_ITEM = stack;
+	}
 
 	// check if a player attacks ItemFrame while holding any item from #eg-invisible-frames:makes_item_frames_invisible
 	//   if so, set ItemFrame to invisible and save the glass pane
 	@Inject(
-		at = @At( value = "INVOKE", target = "Lnet/minecraft/world/entity/decoration/ItemFrame;isInvulnerableToBase(Lnet/minecraft/world/damagesource/DamageSource;)Z", shift = At.Shift.AFTER ),
+		at = @At(
+			value = "INVOKE",
+			target = "Lnet/minecraft/world/entity/decoration/ItemFrame;isInvulnerableToBase(Lnet/minecraft/world/damagesource/DamageSource;)Z",
+			shift = At.Shift.AFTER
+		),
 		method = "hurtServer",
 		cancellable = true
 	)
-	public void damage(ServerLevel world, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir ) {
+	public void damage(ServerLevel level, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
 		Entity attacker = source.getEntity();
 
 		// if player damages an item frame that isn't invisible
@@ -73,7 +87,7 @@ public abstract class ItemFrameEntityMixin extends HangingEntity implements Invi
 
 				this.setInvisible(true);
 				this.playSound(SoundEvents.ITEM_FRAME_PLACE, 1.0F, 1.0F);
-				
+
 				cir.setReturnValue(true);
 			}
 		}
@@ -135,16 +149,6 @@ public abstract class ItemFrameEntityMixin extends HangingEntity implements Invi
 		ItemStack paneStack = this.invisibleFrames$getInvisibleItemStack();
 		this.spawnAtLocation( serverWorld, paneStack );
 		invisibleFrames$setGlassPaneItemStack( ItemStack.EMPTY );
-	}
-
-	@Unique
-	private ItemStack invisibleFrames$getInvisibleItemStack() {
-		return invisibleFrames$GLASS_PANE_ITEM;
-	}
-
-	@Unique
-	private void invisibleFrames$setGlassPaneItemStack(ItemStack stack ) {
-		invisibleFrames$GLASS_PANE_ITEM = stack;
 	}
 
 	@Override
