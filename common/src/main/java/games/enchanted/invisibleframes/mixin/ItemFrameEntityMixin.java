@@ -1,12 +1,7 @@
 package games.enchanted.invisibleframes.mixin;
 
 
-import java.util.ArrayList;
-import java.util.Optional;
-
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
-import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Cancellable;
 import com.llamalad7.mixinextras.sugar.Local;
 import games.enchanted.invisibleframes.InvisibleFramesConstants;
@@ -34,6 +29,9 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.ArrayList;
+import java.util.Optional;
+
 @Debug(export = true)
 @Mixin(ItemFrame.class)
 public abstract class ItemFrameEntityMixin extends HangingEntity implements InvisibleFramesAccess {
@@ -43,10 +41,6 @@ public abstract class ItemFrameEntityMixin extends HangingEntity implements Invi
 
 	@Shadow
 	private boolean fixed;
-	@Shadow
-	public void playPlacementSound() {
-		throw new AssertionError("onPlace not shadowed");
-	};
 	@Shadow
 	public abstract ItemStack getItem();
 
@@ -73,7 +67,7 @@ public abstract class ItemFrameEntityMixin extends HangingEntity implements Invi
 		),
 		method = "hurtServer"
 	)
-	public boolean damage(boolean original, @Local(argsOnly = true) DamageSource source, @Cancellable CallbackInfoReturnable<Boolean> cir) {
+	public boolean invisibleFrames$onServerDamage(boolean original, @Local(argsOnly = true) DamageSource source, @Cancellable CallbackInfoReturnable<Boolean> cir) {
 		if(original) return original;
 		Entity attacker = source.getEntity();
 
@@ -106,13 +100,13 @@ public abstract class ItemFrameEntityMixin extends HangingEntity implements Invi
 
 	// drop glass pane when item frame breaks
 	@Inject(at = @At("HEAD"), method = "dropItem(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/Entity;)V")
-	private void onBreak(ServerLevel world, Entity breaker, CallbackInfo ci ) {
+	private void invisibleFrames$onDropItem(ServerLevel world, Entity breaker, CallbackInfo ci ) {
 		this.invisibleFrames$dropInvisibleItemStack(breaker);
 	}
 	
 	// save glass_pane_item to ItemFrame NBT
 	@Inject(at = @At("HEAD"), method = "addAdditionalSaveData")
-	private void writeCustomDataToNbt( CompoundTag nbt, CallbackInfo ci ) {
+	private void invisibleFrames$saveMadeInvisibleItem(CompoundTag nbt, CallbackInfo ci ) {
 		if(!invisibleFrames$getInvisibleItemStack().isEmpty()) {
 			nbt.put("eg_invisible_frames:made_invisible_item", invisibleFrames$getInvisibleItemStack().save(this.registryAccess()));
 		}
@@ -120,7 +114,7 @@ public abstract class ItemFrameEntityMixin extends HangingEntity implements Invi
 	
 	// read glass_pane_item from ItemFrame NBT
 	@Inject(at = @At("HEAD"), method = "readAdditionalSaveData")
-	private void readCustomDataFromNbt( CompoundTag nbt, CallbackInfo ci ) {
+	private void invisibleFrames$readMadeInvisibleItem(CompoundTag nbt, CallbackInfo ci ) {
 		// check if made_invisible_item field exists and get it
 		Optional<CompoundTag> invisibleItemCompound = nbt.getCompound("eg_invisible_frames:made_invisible_item");
 		ItemStack itemStack = invisibleItemCompound.map(
@@ -141,19 +135,19 @@ public abstract class ItemFrameEntityMixin extends HangingEntity implements Invi
 	@Unique
 	private void invisibleFrames$dropInvisibleItemStack(Entity entity ) {
 		if(!(this.level() instanceof ServerLevel serverWorld)) return;
-		if ( this.fixed || !serverWorld.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS) ) {
+		if(this.fixed || !serverWorld.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
 			return;
 		}
 
 		if (entity instanceof Player player) {
-            if ( player.getAbilities().instabuild ) {
+            if (player.getAbilities().instabuild) {
 				return;
 			}
 		}
 
 		ItemStack paneStack = this.invisibleFrames$getInvisibleItemStack();
-		this.spawnAtLocation( serverWorld, paneStack );
-		invisibleFrames$setGlassPaneItemStack( ItemStack.EMPTY );
+		this.spawnAtLocation(serverWorld, paneStack);
+		invisibleFrames$setGlassPaneItemStack(ItemStack.EMPTY);
 	}
 
 	@Override
