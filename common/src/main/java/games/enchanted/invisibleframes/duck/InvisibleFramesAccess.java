@@ -7,4 +7,5 @@ import net.minecraft.world.item.ItemStack;
 public interface InvisibleFramesAccess {
     ItemStack invisibleFrames$getInvisibleItem();
     ArrayList<ServerPlayer> invisibleFrames$getTrackedPlayers();
+    void invisibleFrames$tickGhostManager();
 }

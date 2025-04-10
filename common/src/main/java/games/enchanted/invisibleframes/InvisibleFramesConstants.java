@@ -11,4 +11,6 @@ public class InvisibleFramesConstants {
 
 	// this uses the old namespace for backwards compatibility with existing datapacks
 	public static final TagKey<Item> MAKES_ITEM_FRAMES_INVISIBLE_TAG = TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath("eg-invisible-frames", "makes_item_frames_invisible"));
+
+	public static final String ENTITY_NO_SAVE_TAG = "eg_invisible_frames:prevent_saving";
 }

@@ -6,8 +6,11 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "BlockAttachedEntityMixin",
+    "EntityMixin",
     "ItemFrameMixin",
-    "access.HangingEntityAccess"
+    "access.DisplayAccess",
+    "access.HangingEntityAccess",
+    "access.TextDisplayAccessor"
   ],
   "client": [
   ],

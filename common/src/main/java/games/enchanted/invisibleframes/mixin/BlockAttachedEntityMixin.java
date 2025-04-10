@@ -29,6 +29,7 @@ public abstract class BlockAttachedEntityMixin extends Entity {
     )
     public void tick(CallbackInfo ci) {
         if(!((Object) this instanceof ItemFrame itemFrameEntity)) return;
+        ((InvisibleFramesAccess) itemFrameEntity).invisibleFrames$tickGhostManager();
         // summon a particle if ItemFrame is invisible, has an item it was made invisible by, is empty, and is less than 15 blocks away from player
         if(!((InvisibleFramesAccess) itemFrameEntity).invisibleFrames$getInvisibleItem().isEmpty() && this.isInvisible() && itemFrameEntity.getItem().isEmpty() && random.nextInt(30) == 0) {
             AABB boundingBox = this.getBoundingBox();

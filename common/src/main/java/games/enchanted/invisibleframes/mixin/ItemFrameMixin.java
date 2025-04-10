@@ -5,11 +5,11 @@ import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Cancellable;
 import com.llamalad7.mixinextras.sugar.Local;
 import games.enchanted.invisibleframes.InvisibleFramesConstants;
+import games.enchanted.invisibleframes.ItemFrameGhostManager;
 import games.enchanted.invisibleframes.duck.InvisibleFramesAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -20,6 +20,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Debug;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -44,10 +45,15 @@ public abstract class ItemFrameMixin extends HangingEntity implements InvisibleF
 	@Shadow
 	public abstract ItemStack getItem();
 
+	@Shadow public abstract void playPlacementSound();
+
 	@Unique
 	private ItemStack invisibleFrames$MADE_INVISIBLE_ITEM = ItemStack.EMPTY;
 	@Unique
 	private final ArrayList<ServerPlayer> invisibleFrames$playersTrackingThisFrame = new ArrayList<>();
+
+	@Unique @Nullable
+	private ItemFrameGhostManager invisibleFrames$ghostManager;
 
 	@Unique
 	private ItemStack invisibleFrames$getInvisibleItemStack() {
@@ -56,6 +62,23 @@ public abstract class ItemFrameMixin extends HangingEntity implements InvisibleF
 	@Unique
 	private void invisibleFrames$setGlassPaneItemStack(ItemStack stack) {
 		invisibleFrames$MADE_INVISIBLE_ITEM = stack;
+	}
+
+	@Unique
+	private void invisibleFrames$summonGhost() {
+		if(this.level() instanceof ServerLevel && invisibleFrames$ghostManager != null) {
+			invisibleFrames$ghostManager.createGhost();
+		}
+	}
+
+	@Inject(
+		at = @At("TAIL"),
+		method = {"<init>(Lnet/minecraft/world/entity/EntityType;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;)V", "<init>(Lnet/minecraft/world/entity/EntityType;Lnet/minecraft/world/level/Level;)V"}
+	)
+	private void invisibleFrames$initialise(CallbackInfo ci, @Local(argsOnly = true) Level level) {
+		if(level instanceof ServerLevel serverLevel) {
+			invisibleFrames$ghostManager = new ItemFrameGhostManager((ItemFrame) (Object) this, serverLevel);
+		}
 	}
 
 	// check if a player attacks ItemFrame while holding any item from #eg-invisible-frames:makes_item_frames_invisible
@@ -84,7 +107,8 @@ public abstract class ItemFrameMixin extends HangingEntity implements InvisibleF
 				}
 
 				this.setInvisible(true);
-				this.playSound(SoundEvents.ITEM_FRAME_PLACE, 1.0F, 1.0F);
+				this.playPlacementSound();
+				invisibleFrames$summonGhost();
 
 				cir.setReturnValue(true);
 			}
@@ -93,6 +117,7 @@ public abstract class ItemFrameMixin extends HangingEntity implements InvisibleF
 		else if (attacker instanceof Player && this.isInvisible() && !this.invisibleFrames$getInvisibleItemStack().isEmpty() && this.getItem().isEmpty()) {
 			this.invisibleFrames$dropInvisibleItemStack(attacker);
 			this.setInvisible(false);
+			this.playPlacementSound();
 			cir.setReturnValue(true);
 		}
 		return original;
@@ -107,7 +132,7 @@ public abstract class ItemFrameMixin extends HangingEntity implements InvisibleF
 	// save glass_pane_item to ItemFrame NBT
 	@Inject(at = @At("HEAD"), method = "addAdditionalSaveData")
 	private void invisibleFrames$saveMadeInvisibleItem(CompoundTag nbt, CallbackInfo ci ) {
-		if(!invisibleFrames$getInvisibleItemStack().isEmpty()) {
+        if(!invisibleFrames$getInvisibleItemStack().isEmpty()) {
 			nbt.put("eg_invisible_frames:made_invisible_item", invisibleFrames$getInvisibleItemStack().save(this.registryAccess()));
 		}
 	}
@@ -168,5 +193,11 @@ public abstract class ItemFrameMixin extends HangingEntity implements InvisibleF
 	@Override
 	public ArrayList<ServerPlayer> invisibleFrames$getTrackedPlayers() {
 		return this.invisibleFrames$playersTrackingThisFrame;
+	}
+
+	@Override
+	public void invisibleFrames$tickGhostManager() {
+		if(invisibleFrames$ghostManager == null) return;
+		invisibleFrames$ghostManager.tick();
 	}
 }
