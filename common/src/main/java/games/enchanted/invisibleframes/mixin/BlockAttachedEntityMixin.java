@@ -29,8 +29,8 @@ public abstract class BlockAttachedEntityMixin extends Entity {
     )
     public void tick(CallbackInfo ci) {
         if(!((Object) this instanceof ItemFrame itemFrameEntity)) return;
-        // summon a particle if ItemFrame is invisible, has a glass_pane_item in its NBT, is empty, and is less than 15 blocks away from player
-        if( !((InvisibleFramesAccess) itemFrameEntity).invisibleFrames$getInvisibleItem().isEmpty() && this.isInvisible() && itemFrameEntity.getItem().isEmpty() && random.nextInt(30) == 0) {
+        // summon a particle if ItemFrame is invisible, has an item it was made invisible by, is empty, and is less than 15 blocks away from player
+        if(!((InvisibleFramesAccess) itemFrameEntity).invisibleFrames$getInvisibleItem().isEmpty() && this.isInvisible() && itemFrameEntity.getItem().isEmpty() && random.nextInt(30) == 0) {
             AABB boundingBox = this.getBoundingBox();
 
             double x = boundingBox.minX + (boundingBox.getXsize() * random.nextDouble());
@@ -41,9 +41,7 @@ public abstract class BlockAttachedEntityMixin extends Entity {
             }
 
             for (ServerPlayer player : ((InvisibleFramesAccess) itemFrameEntity).invisibleFrames$getTrackedPlayers()) {
-                if(player.distanceTo(this) > 15 && player.hasLineOfSight(this)) {
-                    return;
-                }
+                if(player.distanceTo(this) > 15 && player.hasLineOfSight(this)) return;
                 player.connection.send( new ClientboundLevelParticlesPacket( ParticleTypes.END_ROD, false, true, x, y, z, 0.0f, 0.0f, 0.0f, 0.0f, 1 ) );
             }
         }

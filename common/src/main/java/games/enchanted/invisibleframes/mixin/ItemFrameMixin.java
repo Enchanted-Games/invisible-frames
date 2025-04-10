@@ -34,8 +34,8 @@ import java.util.Optional;
 
 @Debug(export = true)
 @Mixin(ItemFrame.class)
-public abstract class ItemFrameEntityMixin extends HangingEntity implements InvisibleFramesAccess {
-	public ItemFrameEntityMixin(EntityType<? extends HangingEntity> entityType, Level world) {
+public abstract class ItemFrameMixin extends HangingEntity implements InvisibleFramesAccess {
+	public ItemFrameMixin(EntityType<? extends HangingEntity> entityType, Level world) {
 		super(entityType, world);
 	}
 
