@@ -19,6 +19,10 @@ import org.joml.Vector3f;
 
 public class ItemFrameGhostManager {
     private static final int FADE_OUT_TICKS = 25;
+    private static final int FADE_OUT_DELAY = 7;
+
+    private static final int STARTING_COLOUR = 0xe1F3E7DD;
+    private static final int ENDING_COLOUR = 0x00F3E7DD;
 
     private final ItemFrame itemFrame;
     private final ServerLevel level;
@@ -36,9 +40,9 @@ public class ItemFrameGhostManager {
         if(display == null) return;
         timeAlive++;
         if(timeAlive == 1) {
-            ((TextDisplayAccessor) display).invisibleFrames$setBackgroundColor(0x00ffffff);
+            ((TextDisplayAccessor) display).invisibleFrames$setBackgroundColor(ENDING_COLOUR);
         }
-        if(timeAlive >= FADE_OUT_TICKS) {
+        if(timeAlive >= FADE_OUT_TICKS + FADE_OUT_DELAY) {
             removeEntities();
         }
     }
@@ -88,8 +92,8 @@ public class ItemFrameGhostManager {
         // setup text display visuals
         ((TextDisplayAccessor) display).invisibleFrames$setText(Component.literal(" "));
         ((DisplayAccess) display).invisibleFrames$setInterpolationDuration(FADE_OUT_TICKS);
-        ((DisplayAccess) display).invisibleFrames$setInterpolationDelay(1);
-        ((TextDisplayAccessor) display).invisibleFrames$setBackgroundColor(0xffffffff);
+        ((DisplayAccess) display).invisibleFrames$setInterpolationDelay(FADE_OUT_DELAY);
+        ((TextDisplayAccessor) display).invisibleFrames$setBackgroundColor(STARTING_COLOUR);
 
         // add data to prevent saving the text display entity
         CompoundTag compoundTag = new CompoundTag();

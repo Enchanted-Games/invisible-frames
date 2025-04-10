@@ -71,6 +71,13 @@ public abstract class ItemFrameMixin extends HangingEntity implements InvisibleF
 		}
 	}
 
+	@Unique
+	private void invisibleFrames$cancelGhostAnimation() {
+		if(this.level() instanceof ServerLevel && invisibleFrames$ghostManager != null) {
+			invisibleFrames$ghostManager.removeEntities();
+		}
+	}
+
 	@Inject(
 		at = @At("TAIL"),
 		method = {"<init>(Lnet/minecraft/world/entity/EntityType;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;)V", "<init>(Lnet/minecraft/world/entity/EntityType;Lnet/minecraft/world/level/Level;)V"}
@@ -116,8 +123,11 @@ public abstract class ItemFrameMixin extends HangingEntity implements InvisibleF
 		// if player damages an item frame that is invisible, has a glass pane item and has no held item
 		else if (attacker instanceof Player && this.isInvisible() && !this.invisibleFrames$getInvisibleItemStack().isEmpty() && this.getItem().isEmpty()) {
 			this.invisibleFrames$dropInvisibleItemStack(attacker);
+
 			this.setInvisible(false);
 			this.playPlacementSound();
+			invisibleFrames$cancelGhostAnimation();
+
 			cir.setReturnValue(true);
 		}
 		return original;
