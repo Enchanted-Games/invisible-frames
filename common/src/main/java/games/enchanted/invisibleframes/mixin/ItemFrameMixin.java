@@ -194,6 +194,8 @@ public abstract class ItemFrameMixin extends HangingEntity implements InvisibleF
 			return;
 		}
 
+		invisibleFrames$setGlassPaneItemStack(ItemStack.EMPTY);
+
 		if (entity instanceof Player player) {
             if (player.getAbilities().instabuild) {
 				return;
@@ -202,7 +204,6 @@ public abstract class ItemFrameMixin extends HangingEntity implements InvisibleF
 
 		ItemStack paneStack = this.invisibleFrames$getInvisibleItemStack();
 		this.spawnAtLocation(serverWorld, paneStack);
-		invisibleFrames$setGlassPaneItemStack(ItemStack.EMPTY);
 	}
 
 	@Override
