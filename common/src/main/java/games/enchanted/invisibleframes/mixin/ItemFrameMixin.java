@@ -194,16 +194,13 @@ public abstract class ItemFrameMixin extends HangingEntity implements InvisibleF
 			return;
 		}
 
-		invisibleFrames$setGlassPaneItemStack(ItemStack.EMPTY);
-
-		if (entity instanceof Player player) {
-            if (player.getAbilities().instabuild) {
-				return;
-			}
+		if (entity instanceof Player player && !player.getAbilities().instabuild) {
+			// if player is not in creative drop the made invisible item
+			ItemStack paneStack = this.invisibleFrames$getInvisibleItemStack();
+			this.spawnAtLocation(serverWorld, paneStack);
 		}
 
-		ItemStack paneStack = this.invisibleFrames$getInvisibleItemStack();
-		this.spawnAtLocation(serverWorld, paneStack);
+		invisibleFrames$setGlassPaneItemStack(ItemStack.EMPTY);
 	}
 
 	@Override
