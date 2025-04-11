@@ -121,14 +121,16 @@ public abstract class ItemFrameMixin extends HangingEntity implements InvisibleF
 			}
 		}
 		// if player damages an item frame that is invisible, has a glass pane item and has no held item
-		else if (attacker instanceof Player && this.isInvisible() && !this.invisibleFrames$getInvisibleItemStack().isEmpty() && this.getItem().isEmpty()) {
-			this.invisibleFrames$dropInvisibleItemStack(attacker);
+		else if (attacker instanceof ServerPlayer player && this.isInvisible() && !this.invisibleFrames$getInvisibleItemStack().isEmpty()) {
+			if(player.isShiftKeyDown() || this.getItem().isEmpty()) {
+				this.invisibleFrames$dropInvisibleItemStack(attacker);
 
-			this.setInvisible(false);
-			this.playPlacementSound();
-			invisibleFrames$cancelGhostAnimation();
+				this.setInvisible(false);
+				this.playPlacementSound();
+				invisibleFrames$cancelGhostAnimation();
 
-			cir.setReturnValue(true);
+				cir.setReturnValue(true);
+			}
 		}
 		return original;
 	}
