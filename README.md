@@ -7,7 +7,7 @@ This mod is fully server-side which means it only needs to be installed on the s
 
 <details>
 <summary>Versions before v2.0</summary>
-To make item frames invisible in v1.3 or below, simply left click the item frame while holding a glass pane.
+To make item frames invisible in v1.3 or below, simply left-click the item frame while holding a glass pane.
 </details>
 
 ## Features
@@ -17,7 +17,7 @@ To make item frames invisible in v1.3 or below, simply left click the item frame
 - The item that was used to make the item frame invisible is dropped when the item frane is made visible again
 
 ## Customisation
-Items that can make Item Frames invisible are controlled by an item tag, which is basically just list of items. You can find an example datapack in the [GitHub Releases page](https://github.com/Enchanted-Games/invisible-frames/releases) for each mod version (as of v2.0).
+Items that can make Item Frames invisible are controlled by an item tag, which is basically just a list of items. You can find an example datapack in the [GitHub Releases page](https://github.com/Enchanted-Games/invisible-frames/releases) for each mod version (as of v2.0).
 
 To add items to this tag, you can make a datapack and add the file `data/eg-invisible-frames/tags/items/makes_item_frames_invisible.json`. See the [default one here](https://github.com/Enchanted-Games/invisible-frames/tree/main/src/main/resources/data/eg-invisible-frames/tags/items) or [read more about tags](https://minecraft.wiki/w/Tag#JSON_format). An example datapack can be found in the `Example Datapack` folder
 
