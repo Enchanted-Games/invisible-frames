@@ -8,7 +8,7 @@
   "display": {
     "description": {
       "translate": "eg_invisible_frames.advancements.adventure.make_item_frame_invisible.description",
-      "fallback": "Make an item frame invisible by punching it with a glass pane"
+      "fallback": "Make an item frame invisible by right clicking it with a glass pane"
     },
     "icon": {
       "count": 1,

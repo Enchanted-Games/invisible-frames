@@ -2,6 +2,8 @@ package games.enchanted.invisibleframes.mixin;
 
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Cancellable;
 import com.llamalad7.mixinextras.sugar.Local;
 import games.enchanted.invisibleframes.InvisibleFramesConstants;
@@ -11,6 +13,8 @@ import games.enchanted.invisibleframes.duck.InvisibleFramesAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -22,6 +26,7 @@ import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.spongepowered.asm.mixin.Debug;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -33,6 +38,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.ArrayList;
 import java.util.Optional;
 
+@Debug(export = true)
 @Mixin(ItemFrame.class)
 public abstract class ItemFrameMixin extends HangingEntity implements InvisibleFramesAccess {
 	public ItemFrameMixin(EntityType<? extends HangingEntity> entityType, Level world) {
@@ -114,8 +120,22 @@ public abstract class ItemFrameMixin extends HangingEntity implements InvisibleF
 
 			cir.setReturnValue(true);
 		}
-		// if a player damages an item frame that isn't invisible, check if they're holding a glass pane and make it invisible if so
-		else if (!this.isInvisible() && playerMainHandStack.is(InvisibleFramesConstants.MAKES_ITEM_FRAMES_INVISIBLE_TAG)) {
+		return original;
+	}
+
+	@WrapOperation(
+		at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/decoration/ItemFrame;setRotation(I)V"),
+		method = "interact"
+	)
+	public void invisibleFrames$onInteract(ItemFrame instance, int rotation, Operation<Void> original, @Local(argsOnly = true) Player player, @Local(argsOnly = true) InteractionHand hand, @Cancellable CallbackInfoReturnable<InteractionResult> cir) {
+		if(!(player instanceof ServerPlayer serverPlayer)) {
+			original.call(instance, rotation);
+			return;
+		}
+		final ItemStack playerMainHandStack = serverPlayer.getMainHandItem();
+
+		// if item frame has an item, try make it invisible instead of rotating if player is holding a glass pane
+		if(!this.isInvisible() && this.invisibleFrames$getInvisibleItemStack().isEmpty() && playerMainHandStack.is(InvisibleFramesConstants.MAKES_ITEM_FRAMES_INVISIBLE_TAG)) {
 			ItemStack copiedStack = playerMainHandStack.copy();
 			copiedStack.setCount(1);
 			invisibleFrames$setGlassPaneItemStack(copiedStack);
@@ -124,13 +144,13 @@ public abstract class ItemFrameMixin extends HangingEntity implements InvisibleF
 			}
 
 			this.setInvisible(true);
-			this.playPlacementSound();
 			invisibleFrames$summonGhost();
-			ModCriteriaTriggers.MADE_ITEM_FRAME_INVISIBLE.trigger(player, (ItemFrame) (Object) this);
+			ModCriteriaTriggers.MADE_ITEM_FRAME_INVISIBLE.trigger(serverPlayer, (ItemFrame) (Object) this);
 
-			cir.setReturnValue(true);
+			cir.setReturnValue(InteractionResult.PASS);
+		} else {
+			original.call(instance, rotation);
 		}
-		return original;
 	}
 
 	// drop glass pane when item frame breaks
