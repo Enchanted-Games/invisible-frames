@@ -1,0 +1,22 @@
+{
+  "parent": "minecraft:adventure/root",
+  "criteria": {
+    "eg_invisible_frames:invisible_item_frame": {
+      "trigger": "eg_invisible_frames:made_item_frame_invisible"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "eg_invisible_frames.advancements.adventure.make_item_frame_invisible.description",
+      "fallback": "Make an item frame invisible by punching it with a glass pane"
+    },
+    "icon": {
+      "count": 1,
+      "id": "minecraft:item_frame"
+    },
+    "title": {
+      "translate": "eg_invisible_frames.advancements.adventure.make_item_frame_invisible.title",
+      "fallback": "Where did it go?"
+    }
+  }
+}

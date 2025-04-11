@@ -6,6 +6,7 @@ import com.llamalad7.mixinextras.sugar.Cancellable;
 import com.llamalad7.mixinextras.sugar.Local;
 import games.enchanted.invisibleframes.InvisibleFramesConstants;
 import games.enchanted.invisibleframes.ItemFrameGhostManager;
+import games.enchanted.invisibleframes.advancement.ModCriteriaTriggers;
 import games.enchanted.invisibleframes.duck.InvisibleFramesAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
@@ -21,7 +22,6 @@ import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.spongepowered.asm.mixin.Debug;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -33,7 +33,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.ArrayList;
 import java.util.Optional;
 
-@Debug(export = true)
 @Mixin(ItemFrame.class)
 public abstract class ItemFrameMixin extends HangingEntity implements InvisibleFramesAccess {
 	public ItemFrameMixin(EntityType<? extends HangingEntity> entityType, Level world) {
@@ -102,7 +101,7 @@ public abstract class ItemFrameMixin extends HangingEntity implements InvisibleF
 		Entity attacker = source.getEntity();
 
 		// if player damages an item frame that isn't invisible
-		if (attacker instanceof Player player && !this.isInvisible() && !this.level().isClientSide) {
+		if (attacker instanceof ServerPlayer player && !this.isInvisible() && this.level() instanceof ServerLevel) {
 			final ItemStack playerMainHandStack = player.getMainHandItem();
 
 			if(playerMainHandStack.is(InvisibleFramesConstants.MAKES_ITEM_FRAMES_INVISIBLE_TAG)) {
@@ -116,6 +115,7 @@ public abstract class ItemFrameMixin extends HangingEntity implements InvisibleF
 				this.setInvisible(true);
 				this.playPlacementSound();
 				invisibleFrames$summonGhost();
+				ModCriteriaTriggers.MADE_ITEM_FRAME_INVISIBLE.trigger(player, (ItemFrame) (Object) this);
 
 				cir.setReturnValue(true);
 			}

@@ -1,0 +1,1 @@
+This namespace "eg-invisible-frames" is only used for backwards compatibility with existing datapacks. All new data should be in the "eg_invisible_frames" namespace
