@@ -19,7 +19,7 @@ To make item frames invisible in v1.3 or below, simply left-click the item frame
 ## Customisation
 Items that can make Item Frames invisible are controlled by an item tag, which is basically just a list of items. You can find an example datapack in the [GitHub Releases page](https://github.com/Enchanted-Games/invisible-frames/releases) for each mod version (as of v2.0).
 
-To add items to this tag, you can make a datapack and add the file `data/eg-invisible-frames/tags/items/makes_item_frames_invisible.json`. See the [default one here](https://github.com/Enchanted-Games/invisible-frames/tree/main/src/main/resources/data/eg-invisible-frames/tags/items) or [read more about tags](https://minecraft.wiki/w/Tag#JSON_format). An example datapack can be found in the `Example Datapack` folder
+To add items to this tag, you can make a datapack and add a file at `data/eg-invisible-frames/tags/items/makes_item_frames_invisible.json`. See the [default one here](https://github.com/Enchanted-Games/invisible-frames/tree/main/src/main/resources/data/eg-invisible-frames/tags/items) or [read more about tags](https://minecraft.wiki/w/Tag#JSON_format).
 
 By default, this contains `minecraft:glass_pane` and `#c:glass_panes` (this is a [Fabric Conventional Tag](https://fabricmc.net/wiki/community:common_tags) that includes vanilla and most modded glass panes).
 
