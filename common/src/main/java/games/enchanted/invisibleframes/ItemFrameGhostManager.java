@@ -52,12 +52,21 @@ public class ItemFrameGhostManager {
 
         timeAlive++;
 
+        if(timeAlive > 1 && itemFrame.getRandom().nextFloat() * (itemFrame.getItem().isEmpty() ? 1 : 2.5) < getPercentageTimeAlive()) {
+            // spawn more particles as the fade out animation finishes, spawns less if the item frame has an item in it
+            spawnRandomParticle();
+        }
+
         if(timeAlive == 1) {
             ((TextDisplayAccessor) display).invisibleFrames$setBackgroundColor(ENDING_COLOUR);
         }
         if(timeAlive >= FADE_OUT_TICKS + FADE_OUT_DELAY) {
             removeEntities();
         }
+    }
+
+    private float getPercentageTimeAlive() {
+        return ((float) timeAlive) / (FADE_OUT_TICKS + FADE_OUT_DELAY);
     }
 
     public void removeEntities() {
@@ -118,7 +127,7 @@ public class ItemFrameGhostManager {
 
     public void spawnRandomParticle() {
         RandomSource random = itemFrame.getRandom();
-        AABB boundingBox = itemFrame.getBoundingBox();
+        AABB boundingBox = itemFrame.getBoundingBox().deflate(0.1);
         Direction frameDirection = ((HangingEntityAccess) itemFrame).invisible_frames$getDirection();
 
         double x = random.nextFloat() * boundingBox.getXsize();
