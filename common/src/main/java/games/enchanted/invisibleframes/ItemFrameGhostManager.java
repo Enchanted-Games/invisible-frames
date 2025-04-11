@@ -54,7 +54,7 @@ public class ItemFrameGhostManager {
 
         timeAlive++;
 
-        if(timeAlive > 1 && itemFrame.getRandom().nextFloat() * (itemFrame.getItem().isEmpty() ? 1 : 2.5) - 0.2 < getPercentageTimeAlive()) {
+        if(timeAlive > 1 && itemFrame.getRandom().nextFloat() * (itemFrame.getItem().isEmpty() ? 1 : 2.5) + 0.2 < getPercentageTimeAlive()) {
             // spawn more particles as the fade out animation finishes, spawns less if the item frame has an item in it
             spawnRandomParticle();
         }
