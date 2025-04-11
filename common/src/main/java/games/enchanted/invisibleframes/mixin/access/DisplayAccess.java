@@ -1,7 +1,9 @@
 package games.enchanted.invisibleframes.mixin.access;
 
 import com.mojang.math.Transformation;
+import net.minecraft.util.Brightness;
 import net.minecraft.world.entity.Display;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
@@ -15,4 +17,7 @@ public interface DisplayAccess {
 
     @Invoker("setTransformationInterpolationDelay")
     void invisibleFrames$setInterpolationDelay(int transformationInterpolationDelay);
+
+    @Invoker("setBrightnessOverride")
+    void invisibleFrames$setBrightness(@Nullable Brightness brightnessOverride);
 }

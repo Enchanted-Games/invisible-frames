@@ -14,9 +14,11 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Brightness;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Display;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.decoration.GlowItemFrame;
 import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.phys.AABB;
@@ -52,7 +54,7 @@ public class ItemFrameGhostManager {
 
         timeAlive++;
 
-        if(timeAlive > 1 && itemFrame.getRandom().nextFloat() * (itemFrame.getItem().isEmpty() ? 1 : 2.5) < getPercentageTimeAlive()) {
+        if(timeAlive > 1 && itemFrame.getRandom().nextFloat() * (itemFrame.getItem().isEmpty() ? 1 : 2.5) - 0.2 < getPercentageTimeAlive()) {
             // spawn more particles as the fade out animation finishes, spawns less if the item frame has an item in it
             spawnRandomParticle();
         }
@@ -116,6 +118,10 @@ public class ItemFrameGhostManager {
         ((DisplayAccess) display).invisibleFrames$setInterpolationDuration(FADE_OUT_TICKS);
         ((DisplayAccess) display).invisibleFrames$setInterpolationDelay(FADE_OUT_DELAY);
         ((TextDisplayAccessor) display).invisibleFrames$setBackgroundColor(STARTING_COLOUR);
+
+        if(itemFrame instanceof GlowItemFrame) {
+            ((DisplayAccess) display).invisibleFrames$setBrightness(Brightness.FULL_BRIGHT);
+        }
 
         // add data to prevent saving the text display entity
         CompoundTag compoundTag = new CompoundTag();
