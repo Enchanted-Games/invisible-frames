@@ -98,39 +98,37 @@ public abstract class ItemFrameMixin extends HangingEntity implements InvisibleF
 	)
 	public boolean invisibleFrames$onServerDamage(boolean original, @Local(argsOnly = true) DamageSource source, @Cancellable CallbackInfoReturnable<Boolean> cir) {
 		if(original) return original;
-		Entity attacker = source.getEntity();
+		if(!(source.getEntity() instanceof ServerPlayer player)) return original;
+		if(!(this.level() instanceof ServerLevel level)) return original;
 
-		// if player damages an item frame that isn't invisible
-		if (attacker instanceof ServerPlayer player && !this.isInvisible() && this.level() instanceof ServerLevel) {
-			final ItemStack playerMainHandStack = player.getMainHandItem();
+		final ItemStack playerMainHandStack = player.getMainHandItem();
 
-			if(playerMainHandStack.is(InvisibleFramesConstants.MAKES_ITEM_FRAMES_INVISIBLE_TAG)) {
-				ItemStack copiedStack = playerMainHandStack.copy();
-				copiedStack.setCount(1);
-				invisibleFrames$setGlassPaneItemStack(copiedStack);
-				if (!player.getAbilities().instabuild) {
-					playerMainHandStack.shrink(1);
-				}
+		// if player damages an item frame that is invisible and has a glass pane item
+		// make it visible again if the player is sneaking or the item frame has no item
+		if (this.isInvisible() && !this.invisibleFrames$getInvisibleItemStack().isEmpty() && (player.isShiftKeyDown() || this.getItem().isEmpty())) {
+			this.invisibleFrames$dropInvisibleItemStack(player);
 
-				this.setInvisible(true);
-				this.playPlacementSound();
-				invisibleFrames$summonGhost();
-				ModCriteriaTriggers.MADE_ITEM_FRAME_INVISIBLE.trigger(player, (ItemFrame) (Object) this);
+			this.setInvisible(false);
+			this.playPlacementSound();
+			invisibleFrames$cancelGhostAnimation();
 
-				cir.setReturnValue(true);
-			}
+			cir.setReturnValue(true);
 		}
-		// if player damages an item frame that is invisible, has a glass pane item and has no held item
-		else if (attacker instanceof ServerPlayer player && this.isInvisible() && !this.invisibleFrames$getInvisibleItemStack().isEmpty()) {
-			if(player.isShiftKeyDown() || this.getItem().isEmpty()) {
-				this.invisibleFrames$dropInvisibleItemStack(attacker);
-
-				this.setInvisible(false);
-				this.playPlacementSound();
-				invisibleFrames$cancelGhostAnimation();
-
-				cir.setReturnValue(true);
+		// if a player damages an item frame that isn't invisible, check if they're holding a glass pane and make it invisible if so
+		else if (!this.isInvisible() && playerMainHandStack.is(InvisibleFramesConstants.MAKES_ITEM_FRAMES_INVISIBLE_TAG)) {
+			ItemStack copiedStack = playerMainHandStack.copy();
+			copiedStack.setCount(1);
+			invisibleFrames$setGlassPaneItemStack(copiedStack);
+			if (!player.getAbilities().instabuild) {
+				playerMainHandStack.shrink(1);
 			}
+
+			this.setInvisible(true);
+			this.playPlacementSound();
+			invisibleFrames$summonGhost();
+			ModCriteriaTriggers.MADE_ITEM_FRAME_INVISIBLE.trigger(player, (ItemFrame) (Object) this);
+
+			cir.setReturnValue(true);
 		}
 		return original;
 	}
@@ -170,7 +168,7 @@ public abstract class ItemFrameMixin extends HangingEntity implements InvisibleF
 	}
 	
 	@Unique
-	private void invisibleFrames$dropInvisibleItemStack(Entity entity ) {
+	private void invisibleFrames$dropInvisibleItemStack(Entity entity) {
 		if(!(this.level() instanceof ServerLevel serverWorld)) return;
 		if(this.fixed || !serverWorld.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
 			return;
