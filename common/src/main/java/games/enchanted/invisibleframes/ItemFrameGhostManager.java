@@ -134,7 +134,7 @@ public class ItemFrameGhostManager {
     public void spawnRandomParticle() {
         RandomSource random = itemFrame.getRandom();
         AABB boundingBox = itemFrame.getBoundingBox().deflate(0.1);
-        Direction frameDirection = ((HangingEntityAccess) itemFrame).invisible_frames$getDirection();
+        Direction frameDirection = itemFrame.getEntityData().get(((HangingEntityAccess) itemFrame).invisible_frames$getDirection());
 
         double x = random.nextFloat() * boundingBox.getXsize();
         double y = random.nextFloat() * boundingBox.getYsize();

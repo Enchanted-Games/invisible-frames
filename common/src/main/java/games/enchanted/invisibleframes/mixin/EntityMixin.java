@@ -4,6 +4,7 @@ import games.enchanted.invisibleframes.InvisibleFramesConstants;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -19,7 +20,7 @@ public class EntityMixin {
         method = "save",
         cancellable = true
     )
-    public void invisibleFrames$skipSavingEntityIfCustomDataPresent(CompoundTag compound, CallbackInfoReturnable<Boolean> cir) {
+    public void invisibleFrames$skipSavingEntityIfCustomDataPresent(ValueOutput output, CallbackInfoReturnable<Boolean> cir) {
         if(this.customData.contains(InvisibleFramesConstants.ENTITY_NO_SAVE_TAG)) {
             cir.setReturnValue(false);
         }

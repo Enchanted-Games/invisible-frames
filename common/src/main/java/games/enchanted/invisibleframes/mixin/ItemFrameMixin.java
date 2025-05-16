@@ -24,6 +24,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Debug;
@@ -161,30 +163,24 @@ public abstract class ItemFrameMixin extends HangingEntity implements InvisibleF
 	
 	// save glass_pane_item to ItemFrame NBT
 	@Inject(at = @At("HEAD"), method = "addAdditionalSaveData")
-	private void invisibleFrames$saveMadeInvisibleItem(CompoundTag nbt, CallbackInfo ci ) {
+	private void invisibleFrames$saveMadeInvisibleItem(ValueOutput data, CallbackInfo ci ) {
         if(!invisibleFrames$getInvisibleItemStack().isEmpty()) {
-			nbt.put("eg_invisible_frames:made_invisible_item", invisibleFrames$getInvisibleItemStack().save(this.registryAccess()));
+			data.store("eg_invisible_frames:made_invisible_item", ItemStack.CODEC, invisibleFrames$getInvisibleItemStack());
 		}
 	}
 	
 	// read glass_pane_item from ItemFrame NBT
 	@Inject(at = @At("HEAD"), method = "readAdditionalSaveData")
-	private void invisibleFrames$readMadeInvisibleItem(CompoundTag nbt, CallbackInfo ci ) {
+	private void invisibleFrames$readMadeInvisibleItem(ValueInput data, CallbackInfo ci ) {
 		// check if made_invisible_item field exists and get it
-		Optional<CompoundTag> invisibleItemCompound = nbt.getCompound("eg_invisible_frames:made_invisible_item");
-		ItemStack itemStack = invisibleItemCompound.map(
-			compoundTag -> ItemStack.parse(this.registryAccess(), compoundTag).orElse(ItemStack.EMPTY)
-		).orElse(ItemStack.EMPTY);
+		ItemStack invisibleItemStack = data.read("eg_invisible_frames:made_invisible_item", ItemStack.CODEC).orElse(ItemStack.EMPTY);
 
-		if(itemStack.isEmpty()) {
-			// check if glass_pane_item exists if made_invisible_item doesnt
-			Optional<CompoundTag> glassPaneCompound = nbt.getCompound("glass_pane_item");
-			itemStack = glassPaneCompound.map(
-				compoundTag -> ItemStack.parse(this.registryAccess(), compoundTag).orElse(ItemStack.EMPTY)
-			).orElse(ItemStack.EMPTY);
+		if(invisibleItemStack.isEmpty()) {
+			// check if glass_pane_item exists if made_invisible_item doesn't
+			invisibleItemStack = data.read("glass_pane_item", ItemStack.CODEC).orElse(ItemStack.EMPTY);
 		}
 
-		this.invisibleFrames$setGlassPaneItemStack(itemStack);
+		this.invisibleFrames$setGlassPaneItemStack(invisibleItemStack);
 	}
 	
 	@Unique
