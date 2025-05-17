@@ -5,7 +5,7 @@ import com.mojang.math.Transformation;
 import games.enchanted.invisibleframes.duck.InvisibleFramesAccess;
 import games.enchanted.invisibleframes.mixin.access.DisplayAccess;
 import games.enchanted.invisibleframes.mixin.access.HangingEntityAccess;
-import games.enchanted.invisibleframes.mixin.access.TextDisplayAccessor;
+import games.enchanted.invisibleframes.mixin.access.TextDisplayAccess;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
@@ -46,7 +46,6 @@ public class ItemFrameGhostManager {
     }
 
     public void tick() {
-        // summon a particle if ItemFrame is invisible, has an item it was made invisible by, is empty, and is less than 15 blocks away from player
         if(timeAlive <= 1 && !((InvisibleFramesAccess) itemFrame).invisibleFrames$getInvisibleItem().isEmpty() && itemFrame.isInvisible() && itemFrame.getItem().isEmpty() && itemFrame.getRandom().nextInt(30) == 0) {
             spawnRandomParticle();
         }
@@ -60,10 +59,10 @@ public class ItemFrameGhostManager {
         }
 
         if(timeAlive == 1) {
-            ((TextDisplayAccessor) display).invisibleFrames$setBackgroundColor(ENDING_COLOUR);
+            ((TextDisplayAccess) display).invisibleFrames$setBackgroundColor(ENDING_COLOUR);
         }
         if(timeAlive >= FADE_OUT_TICKS + FADE_OUT_DELAY) {
-            removeEntities();
+            resetState();
         }
     }
 
@@ -71,7 +70,7 @@ public class ItemFrameGhostManager {
         return ((float) timeAlive) / (FADE_OUT_TICKS + FADE_OUT_DELAY);
     }
 
-    public void removeEntities() {
+    public void resetState() {
         if (display != null) {
             display.discard();
             display = null;
@@ -81,7 +80,7 @@ public class ItemFrameGhostManager {
 
     public void createGhost() {
         if(display != null) {
-            removeEntities();
+            resetState();
         }
         Direction direction = itemFrame.getDirection();
 
@@ -114,10 +113,10 @@ public class ItemFrameGhostManager {
         ));
 
         // setup text display visuals
-        ((TextDisplayAccessor) display).invisibleFrames$setText(Component.literal(" "));
+        ((TextDisplayAccess) display).invisibleFrames$setText(Component.literal(" "));
         ((DisplayAccess) display).invisibleFrames$setInterpolationDuration(FADE_OUT_TICKS);
         ((DisplayAccess) display).invisibleFrames$setInterpolationDelay(FADE_OUT_DELAY);
-        ((TextDisplayAccessor) display).invisibleFrames$setBackgroundColor(STARTING_COLOUR);
+        ((TextDisplayAccess) display).invisibleFrames$setBackgroundColor(STARTING_COLOUR);
 
         if(itemFrame instanceof GlowItemFrame) {
             ((DisplayAccess) display).invisibleFrames$setBrightness(Brightness.FULL_BRIGHT);

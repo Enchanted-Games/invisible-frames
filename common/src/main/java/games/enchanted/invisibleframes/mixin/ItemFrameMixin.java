@@ -10,7 +10,6 @@ import games.enchanted.invisibleframes.InvisibleFramesConstants;
 import games.enchanted.invisibleframes.ItemFrameGhostManager;
 import games.enchanted.invisibleframes.advancement.ModCriteriaTriggers;
 import games.enchanted.invisibleframes.duck.InvisibleFramesAccess;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -38,7 +37,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.ArrayList;
-import java.util.Optional;
 
 @Debug(export = true)
 @Mixin(ItemFrame.class)
@@ -78,13 +76,6 @@ public abstract class ItemFrameMixin extends HangingEntity implements InvisibleF
 		}
 	}
 
-	@Unique
-	private void invisibleFrames$cancelGhostAnimation() {
-		if(this.level() instanceof ServerLevel && invisibleFrames$ghostManager != null) {
-			invisibleFrames$ghostManager.removeEntities();
-		}
-	}
-
 	@Inject(
 		at = @At("TAIL"),
 		method = {"<init>(Lnet/minecraft/world/entity/EntityType;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;)V", "<init>(Lnet/minecraft/world/entity/EntityType;Lnet/minecraft/world/level/Level;)V"}
@@ -95,8 +86,7 @@ public abstract class ItemFrameMixin extends HangingEntity implements InvisibleF
 		}
 	}
 
-	// check if a player attacks ItemFrame while holding any item from #eg-invisible-frames:makes_item_frames_invisible
-	//   if so, set ItemFrame to invisible and save the glass pane
+	// reveal item frame if it is punched while invisible
 	@ModifyExpressionValue(
 		at = @At(
 			value = "INVOKE",
@@ -109,8 +99,6 @@ public abstract class ItemFrameMixin extends HangingEntity implements InvisibleF
 		if(!(source.getEntity() instanceof ServerPlayer player)) return original;
 		if(!(this.level() instanceof ServerLevel level)) return original;
 
-		final ItemStack playerMainHandStack = player.getMainHandItem();
-
 		// if player damages an item frame that is invisible and has a glass pane item
 		// make it visible again if the player is sneaking or the item frame has no item
 		if (this.isInvisible() && !this.invisibleFrames$getInvisibleItemStack().isEmpty() && (player.isShiftKeyDown() || this.getItem().isEmpty())) {
@@ -118,13 +106,19 @@ public abstract class ItemFrameMixin extends HangingEntity implements InvisibleF
 
 			this.setInvisible(false);
 			this.playPlacementSound();
-			invisibleFrames$cancelGhostAnimation();
+			invisibleFrames$resetGhostAnimation();
 
 			cir.setReturnValue(true);
 		}
 		return original;
 	}
 
+	@Override
+	public void kill(ServerLevel level) {
+		super.kill(level);
+	}
+
+	// make item frame invisible if player interacts with a #makes_item_frames_invisible item and item frame has an item
 	@WrapOperation(
 		at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/decoration/ItemFrame;setRotation(I)V"),
 		method = "interact"
@@ -199,29 +193,43 @@ public abstract class ItemFrameMixin extends HangingEntity implements InvisibleF
 		invisibleFrames$setGlassPaneItemStack(ItemStack.EMPTY);
 	}
 
+	// InvisibleFramesAccess
+	@Unique
 	@Override
-	public void startSeenByPlayer(@NotNull ServerPlayer player) {
+	public void invisibleFrames$startSeenByPlayer(@NotNull ServerPlayer player) {
 		invisibleFrames$playersTrackingThisFrame.add(player);
 	}
 
+	@Unique
 	@Override
-	public void stopSeenByPlayer(@NotNull ServerPlayer player){
+	public void invisibleFrames$stopSeenByPlayer(@NotNull ServerPlayer player) {
 		invisibleFrames$playersTrackingThisFrame.remove(player);
 	}
 
+	@Unique
 	@Override
 	public ItemStack invisibleFrames$getInvisibleItem() {
 		return this.invisibleFrames$getInvisibleItemStack();
 	}
 
+	@Unique
 	@Override
 	public ArrayList<ServerPlayer> invisibleFrames$getTrackedPlayers() {
 		return this.invisibleFrames$playersTrackingThisFrame;
 	}
 
+	@Unique
 	@Override
 	public void invisibleFrames$tickGhostManager() {
 		if(invisibleFrames$ghostManager == null) return;
 		invisibleFrames$ghostManager.tick();
+	}
+
+	@Unique
+	@Override
+	public void invisibleFrames$resetGhostAnimation() {
+		if(this.level() instanceof ServerLevel && invisibleFrames$ghostManager != null) {
+			invisibleFrames$ghostManager.resetState();
+		}
 	}
 }

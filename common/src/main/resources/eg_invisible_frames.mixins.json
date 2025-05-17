@@ -10,7 +10,7 @@
     "ItemFrameMixin",
     "access.DisplayAccess",
     "access.HangingEntityAccess",
-    "access.TextDisplayAccessor"
+    "access.TextDisplayAccess"
   ],
   "client": [
   ],
