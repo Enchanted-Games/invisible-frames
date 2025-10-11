@@ -23,7 +23,7 @@ public class EntityMixin {
         cancellable = true
     )
     public void invisibleFrames$skipSavingEntityIfCustomDataPresent(ValueOutput output, CallbackInfoReturnable<Boolean> cir) {
-        if(this.customData.contains(InvisibleFramesConstants.ENTITY_NO_SAVE_TAG)) {
+        if(this.customData.copyTag().contains(InvisibleFramesConstants.ENTITY_NO_SAVE_TAG)) {
             cir.setReturnValue(false);
         }
     }
