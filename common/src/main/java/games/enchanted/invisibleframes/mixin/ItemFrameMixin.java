@@ -21,8 +21,8 @@ import net.minecraft.world.entity.decoration.HangingEntity;
 import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.NotNull;
@@ -173,7 +173,7 @@ public abstract class ItemFrameMixin extends HangingEntity implements InvisibleF
 	@Unique
 	private void invisibleFrames$dropInvisibleItemStack(Entity entity) {
 		if(!(this.level() instanceof ServerLevel serverWorld)) return;
-		if(this.fixed || !serverWorld.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
+		if(this.fixed || !serverWorld.getGameRules().get(GameRules.ENTITY_DROPS)) {
 			return;
 		}
 
