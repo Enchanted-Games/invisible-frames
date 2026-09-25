@@ -14,7 +14,12 @@ import java.util.Optional;
 import net.minecraft.advancements.criterion.EntityPredicate;
 import net.minecraft.advancements.criterion.SimpleCriterionTrigger;
 *///? } else {
-import net.minecraft.advancements.predicates.ContextAwarePredicate;
+//? if minecraft: <= 26.2 {
+/*import net.minecraft.advancements.predicates.ContextAwarePredicate;
+*///? } else {
+import net.minecraft.core.Holder;
+import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
+//? }
 import net.minecraft.advancements.predicates.entity.EntityPredicate;
 import net.minecraft.advancements.triggers.SimpleCriterionTrigger;
 //? }
@@ -31,7 +36,8 @@ public class MadeItemFrameInvisibleTrigger extends SimpleCriterionTrigger<MadeIt
         this.trigger(player, (triggerInstance -> triggerInstance.matches(player, itemFrameEntity)));
     }
 
-    public record TriggerInstance(Optional<ContextAwarePredicate> player, Optional<ContextAwarePredicate> itemFrameEntity) implements SimpleCriterionTrigger.SimpleInstance {
+    //? if minecraft: <= 26.2 {
+    /*public record TriggerInstance(Optional<ContextAwarePredicate> player, Optional<ContextAwarePredicate> itemFrameEntity) implements SimpleCriterionTrigger.SimpleInstance {
         public static final Codec<MadeItemFrameInvisibleTrigger.TriggerInstance> CODEC = RecordCodecBuilder.create(
             (instance) ->
                 instance.group(
@@ -53,4 +59,29 @@ public class MadeItemFrameInvisibleTrigger extends SimpleCriterionTrigger<MadeIt
             return this.itemFrameEntity;
         }
     }
+    *///? } else {
+    public record TriggerInstance(Optional<Holder<LootItemCondition>> player, Optional<Holder<LootItemCondition>> itemFrameEntity) implements SimpleCriterionTrigger.SimpleInstance {
+        public static final Codec<MadeItemFrameInvisibleTrigger.TriggerInstance> CODEC = RecordCodecBuilder.create(
+            (instance) ->
+                instance.group(
+                    LootItemCondition.CODEC.optionalFieldOf("player").forGetter(MadeItemFrameInvisibleTrigger.TriggerInstance::player),
+                    LootItemCondition.CODEC.optionalFieldOf("item_frame").forGetter(MadeItemFrameInvisibleTrigger.TriggerInstance::itemFrameEntity)
+                )
+                .apply(instance, MadeItemFrameInvisibleTrigger.TriggerInstance::new)
+        );
+
+        public boolean matches(ServerPlayer player, ItemFrame itemFrame) {
+            return itemFrame.isInvisible() && !((InvisibleFramesAccess) itemFrame).invisibleFrames$getInvisibleItem().isEmpty();
+        }
+
+        public @NotNull Optional<Holder<LootItemCondition>> player() {
+            return this.player;
+        }
+
+        public @NotNull Optional<Holder<LootItemCondition>> itemFrameEntity() {
+            return this.itemFrameEntity;
+        }
+    }
+    //? }
+
 }
